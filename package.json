@@ -1,0 +1,16 @@
+{
+  "name": "ranked-vote",
+  "version": "1.0.0",
+  "description": "Ranked choice voting app with IRV tallying",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  }
+}

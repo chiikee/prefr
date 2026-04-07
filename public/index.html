@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranked Vote — Create a Poll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1814;
+    --ink-2: #4a4740;
+    --ink-3: #8a8780;
+    --paper: #f7f5f0;
+    --paper-2: #edeae3;
+    --accent: #c84b2f;
+    --accent-2: #e8956d;
+    --border: #d8d4cc;
+    --radius: 6px;
+    --font-serif: 'DM Serif Display', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 2rem 2.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .logo span { color: var(--accent); font-style: italic; }
+
+  nav { margin-left: auto; display: flex; gap: 1.5rem; }
+  nav a { font-size: 0.85rem; color: var(--ink-2); text-decoration: none; letter-spacing: 0.02em; }
+  nav a:hover { color: var(--accent); }
+
+  main {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  }
+
+  .card-title {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+  }
+
+  .card-subtitle {
+    color: var(--ink-3);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .field { margin-bottom: 1.4rem; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-bottom: 0.45rem;
+  }
+
+  input[type=text], input[type=password], textarea {
+    width: 100%;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.65rem 0.9rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type=text]:focus, input[type=password]:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { resize: vertical; min-height: 72px; }
+
+  .options-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .option-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .option-row input { flex: 1; }
+
+  .btn-remove {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.6rem 0.7rem;
+    cursor: pointer;
+    color: var(--ink-3);
+    font-size: 1rem;
+    line-height: 1;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .btn-remove:hover { color: var(--accent); border-color: var(--accent); }
+
+  .btn-add {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    color: var(--ink-3);
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    width: 100%;
+    margin-top: 0.5rem;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .btn-add:hover { color: var(--accent); border-color: var(--accent); }
+
+  .hint {
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    margin-top: 0.4rem;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.8rem 0;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.85rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .btn-primary:hover { background: #b03d23; }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { background: var(--ink-3); cursor: not-allowed; }
+
+  .error {
+    background: #fff0ed;
+    border: 1px solid #f5c4bb;
+    border-radius: var(--radius);
+    padding: 0.7rem 1rem;
+    font-size: 0.88rem;
+    color: #8b2a1a;
+    margin-bottom: 1.2rem;
+    display: none;
+  }
+
+  .error.show { display: block; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">Ranked<span>Vote</span></a>
+  <nav>
+    <a href="/recover">Recover admin link</a>
+  </nav>
+</header>
+<main>
+  <div class="card">
+    <h1 class="card-title">Create a poll</h1>
+    <p class="card-subtitle">Voters rank their preferences — winner found via instant-runoff.</p>
+
+    <div class="error" id="error"></div>
+
+    <div class="field">
+      <label for="title">Poll title</label>
+      <input type="text" id="title" placeholder="What should we choose?" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label for="description">Description <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <textarea id="description" placeholder="Any context for voters…"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Options</label>
+      <div class="options-list" id="options-list"></div>
+      <button class="btn-add" id="btn-add">+ Add option</button>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field">
+      <label for="passphrase">Recovery passphrase</label>
+      <input type="password" id="passphrase" placeholder="Something memorable…" autocomplete="new-password">
+      <p class="hint">If you lose your admin link, use this + your poll ID to recover it.</p>
+    </div>
+
+    <button class="btn-primary" id="btn-create">Create poll</button>
+  </div>
+</main>
+
+<script>
+const optionsList = document.getElementById('options-list');
+
+function addOption(value = '') {
+  const row = document.createElement('div');
+  row.className = 'option-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Option…" value="${value.replace(/"/g,'&quot;')}" autocomplete="off">
+    <button class="btn-remove" title="Remove">×</button>
+  `;
+  row.querySelector('.btn-remove').addEventListener('click', () => {
+    if (optionsList.children.length > 2) row.remove();
+  });
+  optionsList.appendChild(row);
+  row.querySelector('input').focus();
+}
+
+// Start with 3 options
+addOption(); addOption(); addOption();
+
+document.getElementById('btn-add').addEventListener('click', () => addOption());
+
+document.getElementById('btn-create').addEventListener('click', async () => {
+  const errEl = document.getElementById('error');
+  errEl.classList.remove('show');
+
+  const title = document.getElementById('title').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const passphrase = document.getElementById('passphrase').value.trim();
+  const options = [...optionsList.querySelectorAll('input')].map(i => i.value.trim()).filter(Boolean);
+
+  if (!title) return showError('Please enter a poll title.');
+  if (options.length < 2) return showError('Please enter at least 2 options.');
+  if (!passphrase || passphrase.length < 4) return showError('Recovery passphrase must be at least 4 characters.');
+
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+
+  try {
+    const res = await fetch('/api/polls', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, options, passphrase }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showError(data.error);
+    window.location.href = data.adminUrl;
+  } catch (e) {
+    showError('Something went wrong. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create poll';
+  }
+
+  function showError(msg) {
+    errEl.textContent = msg;
+    errEl.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Create poll';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recover Admin Link — RankedVote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #1a1814; --ink-2: #4a4740; --ink-3: #8a8780;
+    --paper: #f7f5f0; --paper-2: #edeae3;
+    --accent: #c84b2f; --accent-light: #fff0ed;
+    --green: #2a7a4b; --green-light: #ebf7f1;
+    --border: #d8d4cc; --radius: 6px;
+    --font-serif: 'DM Serif Display', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+  }
+  body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 300; min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); background: white; }
+  .logo { font-family: var(--font-serif); font-size: 1.3rem; color: var(--ink); text-decoration: none; }
+  .logo span { color: var(--accent); font-style: italic; }
+  main { flex: 1; display: grid; place-items: center; padding: 2.5rem 1.5rem; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; width: 100%; max-width: 460px; box-shadow: 0 2px 16px rgba(0,0,0,0.04); }
+  .card-title { font-family: var(--font-serif); font-size: 1.8rem; line-height: 1.1; margin-bottom: 0.3rem; }
+  .card-sub { color: var(--ink-3); font-size: 0.88rem; margin-bottom: 2rem; }
+  .field { margin-bottom: 1.3rem; }
+  label { display: block; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 0.45rem; }
+  input[type=text], input[type=password] { width: 100%; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.65rem 0.9rem; font-family: var(--font-sans); font-size: 0.95rem; font-weight: 300; color: var(--ink); outline: none; transition: border-color 0.15s; }
+  input:focus { border-color: var(--accent); }
+  .btn-primary { width: 100%; background: var(--accent); color: white; border: none; border-radius: var(--radius); padding: 0.85rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: #b03d23; }
+  .btn-primary:disabled { background: var(--ink-3); cursor: not-allowed; }
+  .error { background: var(--accent-light); border: 1px solid #f5c4bb; border-radius: var(--radius); padding: 0.7rem 1rem; font-size: 0.88rem; color: #8b2a1a; margin-bottom: 1rem; display: none; }
+  .error.show { display: block; }
+  .result-box { background: var(--green-light); border: 1px solid #a8dfc0; border-radius: 8px; padding: 1.2rem; margin-top: 1.4rem; display: none; }
+  .result-box.show { display: block; }
+  .result-label { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
+  .copy-row { display: flex; gap: 0.5rem; }
+  .copy-input { flex: 1; background: white; border: 1px solid #a8dfc0; border-radius: var(--radius); padding: 0.55rem 0.8rem; font-family: var(--font-sans); font-size: 0.82rem; color: var(--ink-2); cursor: text; }
+  .btn-copy { background: white; border: 1px solid #a8dfc0; border-radius: var(--radius); padding: 0.55rem 0.9rem; font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500; cursor: pointer; color: var(--green); white-space: nowrap; transition: all 0.15s; }
+  .btn-copy:hover { background: white; }
+  .btn-goto { display: block; width: 100%; margin-top: 0.8rem; background: var(--green); color: white; border: none; border-radius: var(--radius); padding: 0.7rem; font-family: var(--font-sans); font-size: 0.9rem; font-weight: 500; cursor: pointer; text-align: center; text-decoration: none; transition: background 0.15s; }
+  .btn-goto:hover { background: #1f5e39; }
+  .delay-msg { font-size: 0.82rem; color: var(--ink-3); margin-top: 0.5rem; display: none; }
+  .delay-msg.show { display: block; }
+</style>
+</head>
+<body>
+<header><a class="logo" href="/">Ranked<span>Vote</span></a></header>
+<main>
+  <div class="card">
+    <h1 class="card-title">Recover admin link</h1>
+    <p class="card-sub">Enter your poll ID and recovery passphrase to retrieve your admin link.</p>
+
+    <div class="error" id="error"></div>
+
+    <div class="field">
+      <label for="poll-id">Poll ID</label>
+      <input type="text" id="poll-id" placeholder="e.g. a1b2c3d4" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="passphrase">Recovery passphrase</label>
+      <input type="password" id="passphrase" placeholder="Your passphrase…" autocomplete="current-password">
+    </div>
+
+    <button class="btn-primary" id="btn-recover">Recover</button>
+    <p class="delay-msg" id="delay-msg"></p>
+
+    <div class="result-box" id="result-box">
+      <div class="result-label">Your admin link</div>
+      <div class="copy-row">
+        <input class="copy-input" id="result-link" readonly>
+        <button class="btn-copy" onclick="copyResult(this)">Copy</button>
+      </div>
+      <a class="btn-goto" id="btn-goto" href="#">Go to admin page →</a>
+    </div>
+  </div>
+</main>
+
+<script>
+// Pre-fill poll ID from query string if provided (?pollId=xxx)
+const params = new URLSearchParams(window.location.search);
+if (params.get('pollId')) document.getElementById('poll-id').value = params.get('pollId');
+
+document.getElementById('btn-recover').addEventListener('click', async () => {
+  const errEl = document.getElementById('error');
+  errEl.classList.remove('show');
+  document.getElementById('result-box').classList.remove('show');
+  document.getElementById('delay-msg').classList.remove('show');
+
+  const pollId = document.getElementById('poll-id').value.trim();
+  const passphrase = document.getElementById('passphrase').value.trim();
+
+  if (!pollId) { errEl.textContent = 'Please enter your poll ID.'; errEl.classList.add('show'); return; }
+  if (!passphrase) { errEl.textContent = 'Please enter your recovery passphrase.'; errEl.classList.add('show'); return; }
+
+  const btn = document.getElementById('btn-recover');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+
+  try {
+    const res = await fetch('/api/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pollId, passphrase }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Incorrect passphrase.';
+      errEl.classList.add('show');
+
+      if (data.retryAfterMs > 0) {
+        const delayEl = document.getElementById('delay-msg');
+        const secs = Math.ceil(data.retryAfterMs / 1000);
+        delayEl.textContent = `Too many wrong attempts — next try will be delayed by ~${secs}s.`;
+        delayEl.classList.add('show');
+      }
+      return;
+    }
+
+    const fullUrl = window.location.origin + data.adminUrl;
+    document.getElementById('result-link').value = fullUrl;
+    document.getElementById('btn-goto').href = data.adminUrl;
+    document.getElementById('result-box').classList.add('show');
+  } catch (e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Recover';
+  }
+});
+
+function copyResult(btn) {
+  navigator.clipboard.writeText(document.getElementById('result-link').value).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1800);
+  });
+}
+
+// Submit on Enter
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-recover').click();
+});
+</script>
+</body>
+</html>

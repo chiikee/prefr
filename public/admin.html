@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — RankedVote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #1a1814; --ink-2: #4a4740; --ink-3: #8a8780;
+    --paper: #f7f5f0; --paper-2: #edeae3;
+    --accent: #c84b2f; --accent-light: #fff0ed;
+    --green: #2a7a4b; --green-light: #ebf7f1;
+    --border: #d8d4cc; --radius: 6px;
+    --font-serif: 'DM Serif Display', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+  }
+  body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); font-weight: 300; min-height: 100vh; }
+  header { padding: 1.5rem 2.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border); background: white; }
+  .logo { font-family: var(--font-serif); font-size: 1.3rem; color: var(--ink); text-decoration: none; }
+  .logo span { color: var(--accent); font-style: italic; }
+  .badge { font-size: 0.72rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .badge-open { background: var(--green-light); color: var(--green); }
+  .badge-closed { background: #f3f0eb; color: var(--ink-3); }
+  .header-title { font-size: 0.95rem; font-weight: 400; color: var(--ink-2); margin-left: 0.5rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  main { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .panel { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .panel-head { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .panel-head h2 { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 400; }
+  .panel-body { padding: 1.5rem; }
+
+  .copy-row { display: flex; gap: 0.5rem; align-items: center; }
+  .copy-input { flex: 1; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.9rem; font-family: var(--font-sans); font-size: 0.85rem; color: var(--ink-2); cursor: text; }
+  .btn-copy { background: var(--paper-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 1rem; font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500; cursor: pointer; color: var(--ink-2); white-space: nowrap; transition: all 0.15s; }
+  .btn-copy:hover { background: var(--paper); border-color: var(--ink-3); }
+  .btn-copy.copied { background: var(--green-light); border-color: var(--green); color: var(--green); }
+
+  .link-label { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 0.4rem; }
+  .link-section { margin-bottom: 1.2rem; }
+  .link-section:last-child { margin-bottom: 0; }
+
+  .status-row { display: flex; align-items: center; gap: 1rem; }
+  .status-desc { font-size: 0.88rem; color: var(--ink-3); }
+  .btn-toggle { border: 1px solid var(--border); background: white; border-radius: var(--radius); padding: 0.55rem 1.1rem; font-family: var(--font-sans); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .btn-toggle.open { border-color: var(--accent); color: var(--accent); }
+  .btn-toggle.open:hover { background: var(--accent-light); }
+  .btn-toggle.closed { border-color: var(--green); color: var(--green); }
+  .btn-toggle.closed:hover { background: var(--green-light); }
+
+  .voter-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .voter-pill { background: var(--paper); border: 1px solid var(--border); border-radius: 20px; padding: 0.25rem 0.75rem; font-size: 0.82rem; color: var(--ink-2); }
+  .empty-note { font-size: 0.88rem; color: var(--ink-3); }
+
+  /* IRV results */
+  .rounds { display: flex; flex-direction: column; gap: 1rem; }
+  .round-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .round-head { background: var(--paper); padding: 0.6rem 1rem; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); display: flex; justify-content: space-between; align-items: center; }
+  .round-head .eliminated { color: var(--accent); }
+  .round-head .winner-label { color: var(--green); }
+  .bar-list { padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .bar-row { display: flex; align-items: center; gap: 0.7rem; }
+  .bar-name { font-size: 0.88rem; min-width: 140px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 8px; background: var(--paper-2); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--ink-3); transition: width 0.4s ease; }
+  .bar-fill.leading { background: var(--accent); }
+  .bar-fill.winner { background: var(--green); }
+  .bar-count { font-size: 0.82rem; color: var(--ink-3); min-width: 36px; text-align: right; }
+  .bar-pct { font-size: 0.78rem; color: var(--ink-3); min-width: 40px; text-align: right; }
+  .winner-banner { background: var(--green-light); border: 1px solid #a8dfc0; border-radius: 8px; padding: 1rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; }
+  .winner-banner .w-label { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--green); }
+  .winner-banner .w-name { font-family: var(--font-serif); font-size: 1.4rem; color: var(--green); }
+
+  .no-votes { font-size: 0.9rem; color: var(--ink-3); text-align: center; padding: 1.5rem 0; }
+
+  /* Edit form */
+  .field { margin-bottom: 1.2rem; }
+  .field label { display: block; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 0.4rem; }
+  input[type=text], textarea { width: 100%; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.85rem; font-family: var(--font-sans); font-size: 0.9rem; font-weight: 300; color: var(--ink); outline: none; transition: border-color 0.15s; }
+  input[type=text]:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 60px; }
+  .options-edit { display: flex; flex-direction: column; gap: 0.45rem; }
+  .option-row-edit { display: flex; gap: 0.4rem; }
+  .option-row-edit input { flex: 1; }
+  .btn-sm { border: 1px solid var(--border); background: none; border-radius: var(--radius); padding: 0.5rem 0.7rem; cursor: pointer; font-size: 0.9rem; color: var(--ink-3); transition: all 0.15s; }
+  .btn-sm:hover { color: var(--accent); border-color: var(--accent); }
+  .btn-add-opt { border: 1px dashed var(--border); background: none; border-radius: var(--radius); padding: 0.5rem; cursor: pointer; font-family: var(--font-sans); font-size: 0.82rem; color: var(--ink-3); width: 100%; margin-top: 0.3rem; transition: all 0.15s; }
+  .btn-add-opt:hover { color: var(--accent); border-color: var(--accent); }
+  .btn-save { background: var(--ink); color: white; border: none; border-radius: var(--radius); padding: 0.6rem 1.4rem; font-family: var(--font-sans); font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+  .btn-save:hover { background: var(--ink-2); }
+  .save-msg { font-size: 0.82rem; color: var(--green); margin-left: 0.8rem; opacity: 0; transition: opacity 0.3s; }
+  .save-msg.show { opacity: 1; }
+
+  .warn { font-size: 0.8rem; color: var(--accent); margin-top: 0.4rem; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">Ranked<span>Vote</span></a>
+  <span class="header-title" id="header-title">Loading…</span>
+  <span class="badge" id="status-badge">…</span>
+</header>
+
+<main>
+  <!-- Winner banner (shown when closed and winner found) -->
+  <div class="winner-banner" id="winner-banner" style="display:none">
+    <div>
+      <div class="w-label">Winner</div>
+      <div class="w-name" id="winner-name"></div>
+    </div>
+  </div>
+
+  <!-- Links -->
+  <div class="panel">
+    <div class="panel-head"><h2>Links</h2></div>
+    <div class="panel-body">
+      <div class="link-section">
+        <div class="link-label">Voting link — share this</div>
+        <div class="copy-row">
+          <input class="copy-input" id="vote-link" readonly>
+          <button class="btn-copy" onclick="copyLink('vote-link', this)">Copy</button>
+        </div>
+      </div>
+      <div class="link-section">
+        <div class="link-label">Admin link — keep this secret</div>
+        <div class="copy-row">
+          <input class="copy-input" id="admin-link" readonly>
+          <button class="btn-copy" onclick="copyLink('admin-link', this)">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status control -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Voting status</h2>
+    </div>
+    <div class="panel-body">
+      <div class="status-row">
+        <button class="btn-toggle" id="btn-toggle" onclick="toggleStatus()">…</button>
+        <span class="status-desc" id="status-desc"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Results</h2>
+      <span id="ballot-count" style="font-size:0.85rem;color:var(--ink-3)"></span>
+    </div>
+    <div class="panel-body" id="results-body">
+      <p class="no-votes">No votes yet.</p>
+    </div>
+  </div>
+
+  <!-- Voters -->
+  <div class="panel">
+    <div class="panel-head"><h2>Voters</h2></div>
+    <div class="panel-body" id="voters-body">
+      <p class="empty-note">No votes yet.</p>
+    </div>
+  </div>
+
+  <!-- Edit poll -->
+  <div class="panel">
+    <div class="panel-head"><h2>Edit poll</h2></div>
+    <div class="panel-body">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="edit-title">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="edit-desc"></textarea>
+      </div>
+      <div class="field">
+        <label>Options</label>
+        <p class="warn" id="edit-warn" style="display:none">Changing options will not affect existing ballots — voters may have ranked options that no longer exist.</p>
+        <div class="options-edit" id="edit-options"></div>
+        <button class="btn-add-opt" onclick="addEditOption()">+ Add option</button>
+      </div>
+      <div style="display:flex;align-items:center">
+        <button class="btn-save" onclick="saveEdits()">Save changes</button>
+        <span class="save-msg" id="save-msg">Saved!</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Extract pollId and adminKey from URL: /admin/:pollId/:adminKey
+const [, , pollId, adminKey] = window.location.pathname.split('/');
+let pollData = null;
+
+async function load() {
+  const res = await fetch(`/api/polls/${pollId}/${adminKey}`);
+  if (!res.ok) {
+    document.body.innerHTML = '<div style="padding:3rem;text-align:center;font-family:sans-serif;color:#888">Invalid or expired admin link.</div>';
+    return;
+  }
+  pollData = await res.json();
+  render(pollData);
+}
+
+function render(p) {
+  document.title = `${p.title} — Admin`;
+  document.getElementById('header-title').textContent = p.title;
+
+  const badge = document.getElementById('status-badge');
+  badge.textContent = p.status;
+  badge.className = `badge badge-${p.status}`;
+
+  const base = window.location.origin;
+  document.getElementById('vote-link').value = `${base}/vote/${p.id}`;
+  document.getElementById('admin-link').value = `${base}/admin/${p.id}/${p.adminKey}`;
+
+  // Status toggle
+  const btn = document.getElementById('btn-toggle');
+  const desc = document.getElementById('status-desc');
+  if (p.status === 'open') {
+    btn.textContent = 'Close poll'; btn.className = 'btn-toggle open';
+    desc.textContent = 'Poll is open — voters can submit and update their ballots.';
+  } else {
+    btn.textContent = 'Reopen poll'; btn.className = 'btn-toggle closed';
+    desc.textContent = 'Poll is closed — no new submissions accepted.';
+  }
+
+  // Ballot count
+  document.getElementById('ballot-count').textContent = `${p.ballotCount} vote${p.ballotCount !== 1 ? 's' : ''}`;
+
+  // Winner banner
+  const wb = document.getElementById('winner-banner');
+  if (p.tally.winner) {
+    wb.style.display = 'flex';
+    document.getElementById('winner-name').textContent = p.tally.winner;
+  } else {
+    wb.style.display = 'none';
+  }
+
+  // Results
+  renderResults(p);
+
+  // Voters
+  const vb = document.getElementById('voters-body');
+  if (p.voters.length === 0) {
+    vb.innerHTML = '<p class="empty-note">No votes yet.</p>';
+  } else {
+    vb.innerHTML = `<div class="voter-list">${p.voters.map(v => `<span class="voter-pill">${esc(v)} <button onclick="deleteBallot('${esc(v)}')" class="btn-sm" style="margin-left:0.5rem;">Delete</button></span>`).join('')}</div>`;
+  }
+
+  // Edit form
+  document.getElementById('edit-title').value = p.title;
+  document.getElementById('edit-desc').value = p.description || '';
+  const eo = document.getElementById('edit-options');
+  eo.innerHTML = '';
+  p.options.forEach(opt => addEditOption(opt));
+}
+
+function renderResults(p) {
+  const body = document.getElementById('results-body');
+  if (!p.tally.rounds.length) { body.innerHTML = '<p class="no-votes">No votes yet.</p>'; return; }
+
+  const html = p.tally.rounds.map((round, i) => {
+    const total = Object.values(round.counts).reduce((a, b) => a + b, 0);
+    const maxVotes = Math.max(...Object.values(round.counts));
+    const sortedOptions = Object.entries(round.counts).sort((a, b) => b[1] - a[1]);
+
+    const bars = sortedOptions.map(([opt, count]) => {
+      const pct = total ? Math.round(count / total * 100) : 0;
+      const width = maxVotes ? Math.round(count / maxVotes * 100) : 0;
+      const isWinner = opt === round.winner;
+      const isLeading = count === maxVotes && !round.winner;
+      const fillClass = isWinner ? 'winner' : isLeading ? 'leading' : '';
+      return `<div class="bar-row">
+        <div class="bar-name" title="${esc(opt)}">${esc(opt)}</div>
+        <div class="bar-track"><div class="bar-fill ${fillClass}" style="width:${width}%"></div></div>
+        <div class="bar-count">${count}</div>
+        <div class="bar-pct">${pct}%</div>
+      </div>`;
+    }).join('');
+
+    let tag = '';
+    if (round.winner) tag = `<span class="winner-label">Winner: ${esc(round.winner)}</span>`;
+    else if (round.eliminated) tag = `<span class="eliminated">Eliminated: ${esc(round.eliminated)}</span>`;
+
+    return `<div class="round-card">
+      <div class="round-head"><span>Round ${i + 1}</span>${tag}</div>
+      <div class="bar-list">${bars}</div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `<div class="rounds">${html}</div>`;
+}
+
+async function toggleStatus() {
+  const newStatus = pollData.status === 'open' ? 'closed' : 'open';
+  await fetch(`/api/polls/${pollId}/${adminKey}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: newStatus }),
+  });
+  await load();
+}
+
+function addEditOption(value = '') {
+  const list = document.getElementById('edit-options');
+  const row = document.createElement('div');
+  row.className = 'option-row-edit';
+  row.innerHTML = `<input type="text" value="${esc(value)}" autocomplete="off"><button class="btn-sm" title="Remove">×</button>`;
+  row.querySelector('button').addEventListener('click', () => {
+    document.getElementById('edit-warn').style.display = 'block';
+    if (list.children.length > 2) row.remove();
+  });
+  row.querySelector('input').addEventListener('input', () => {
+    document.getElementById('edit-warn').style.display = 'block';
+  });
+  list.appendChild(row);
+}
+
+async function saveEdits() {
+  const title = document.getElementById('edit-title').value.trim();
+  const description = document.getElementById('edit-desc').value.trim();
+  const options = [...document.getElementById('edit-options').querySelectorAll('input')].map(i => i.value.trim()).filter(Boolean);
+  await fetch(`/api/polls/${pollId}/${adminKey}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, description, options }),
+  });
+  const msg = document.getElementById('save-msg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+  await load();
+}
+
+function copyLink(inputId, btn) {
+  const val = document.getElementById(inputId).value;
+  navigator.clipboard.writeText(val).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+async function deleteBallot(alias) {
+  if (!confirm(`Delete ballot for "${alias}"? This cannot be undone.`)) return;
+  const res = await fetch(`/api/polls/${pollId}/${adminKey}/ballot/${encodeURIComponent(alias)}`, { method: 'DELETE' });
+  if (!res.ok) {
+    alert('Failed to delete ballot.');
+    return;
+  }
+  await load();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+load();
+// Auto-refresh results every 15s
+setInterval(load, 15000);
+</script>
+</body>
+</html>
