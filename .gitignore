@@ -228,3 +228,6 @@ votes.db-*
 
 # Logs
 *.log
+
+# Local scripts with secrets
+scripts/
