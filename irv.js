@@ -58,4 +58,38 @@ function tallyIRV(ballots, options) {
   return { rounds, winner: null };
 }
 
-module.exports = { tallyIRV };
+/**
+ * Borda Count tally.
+ *
+ * @param {string[][]} ballots  Array of ballots; each ballot is an ordered
+ *                              array of option labels (first = most preferred).
+ * @param {string[]}   options  Full list of option labels.
+ * @returns {{ scores: {[label]: number}, ranking: string[] }}
+ */
+function tallyBorda(ballots, options) {
+  const scores = {};
+  options.forEach(o => (scores[o] = 0));
+
+  const n = options.length;
+  for (const ballot of ballots) {
+    // Map ballot positions to points (first gets n-1, second n-2, etc.)
+    const ballotMap = {};
+    ballot.forEach((option, index) => {
+      if (options.includes(option)) {
+        ballotMap[option] = n - 1 - index;
+      }
+    });
+
+    // Add points for each option in this ballot
+    options.forEach(option => {
+      scores[option] += ballotMap[option] || 0;
+    });
+  }
+
+  // Sort options by score descending (highest first)
+  const ranking = options.sort((a, b) => scores[b] - scores[a]);
+
+  return { scores, ranking };
+}
+
+module.exports = { tallyIRV, tallyBorda };

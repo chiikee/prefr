@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vote — RankedVote</title>
+  <title>Vote — Prefr</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap"
@@ -405,7 +405,7 @@
 </head>
 
 <body>
-  <header><a class="logo" href="/">Ranked<span>Vote</span></a></header>
+  <header><a class="logo" href="/">Pre<span>fr</span></a></header>
   <main>
     <div class="card" id="card">
       <p style="color:var(--ink-3);font-size:0.9rem">Loading poll…</p>
@@ -606,8 +606,8 @@
       try {
         const res = await fetch(`/api/polls/${pollId}/tally`);
         if (!res.ok) { document.getElementById('results-section').innerHTML = ''; return; }
-        const { tally, ballotCount } = await res.json();
-        renderTally(tally, ballotCount);
+        const { irv, borda, ballotCount } = await res.json();
+        renderTally(irv, ballotCount);
       } catch (e) {
         const section = document.getElementById('results-section');
         if (section) section.innerHTML = '';

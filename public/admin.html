@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — RankedVote</title>
+<title>Admin — Prefr</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -98,7 +98,7 @@
 </head>
 <body>
 <header>
-  <a class="logo" href="/">Ranked<span>Vote</span></a>
+  <a class="logo" href="/">Pre<span>fr</span></a>
   <span class="header-title" id="header-title">Loading…</span>
   <span class="badge" id="status-badge">…</span>
 </header>
@@ -234,9 +234,9 @@ function render(p) {
 
   // Winner banner
   const wb = document.getElementById('winner-banner');
-  if (p.tally.winner) {
+  if (p.irv.winner) {
     wb.style.display = 'flex';
-    document.getElementById('winner-name').textContent = p.tally.winner;
+    document.getElementById('winner-name').textContent = p.irv.winner;
   } else {
     wb.style.display = 'none';
   }
@@ -262,9 +262,10 @@ function render(p) {
 
 function renderResults(p) {
   const body = document.getElementById('results-body');
-  if (!p.tally.rounds.length) { body.innerHTML = '<p class="no-votes">No votes yet.</p>'; return; }
+  if (!p.irv.rounds.length) { body.innerHTML = '<p class="no-votes">No votes yet.</p>'; return; }
 
-  const html = p.tally.rounds.map((round, i) => {
+  // IRV Results
+  const irvHtml = p.irv.rounds.map((round, i) => {
     const total = Object.values(round.counts).reduce((a, b) => a + b, 0);
     const maxVotes = Math.max(...Object.values(round.counts));
     const sortedOptions = Object.entries(round.counts).sort((a, b) => b[1] - a[1]);
@@ -293,7 +294,32 @@ function renderResults(p) {
     </div>`;
   }).join('');
 
-  body.innerHTML = `<div class="rounds">${html}</div>`;
+  // Borda Results
+  const bordaHtml = p.borda.ranking.map((opt, i) => {
+    const score = p.borda.scores[opt];
+    const isWinner = i === 0;
+    const fillClass = isWinner ? 'winner' : '';
+    return `<div class="bar-row">
+      <div class="bar-name" title="${esc(opt)}">${esc(opt)}</div>
+      <div class="bar-track"><div class="bar-fill ${fillClass}" style="width:100%"></div></div>
+      <div class="bar-count">${score} pts</div>
+      <div class="bar-pct">#${i + 1}</div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div style="margin-bottom: 2rem;">
+      <h3 style="font-family: var(--font-serif); font-size: 1.1rem; margin-bottom: 1rem;">Instant-Runoff Voting (IRV)</h3>
+      <div class="rounds">${irvHtml}</div>
+    </div>
+    <div>
+      <h3 style="font-family: var(--font-serif); font-size: 1.1rem; margin-bottom: 1rem;">Borda Count</h3>
+      <div class="round-card">
+        <div class="round-head"><span>Final Scores</span></div>
+        <div class="bar-list">${bordaHtml}</div>
+      </div>
+    </div>
+  `;
 }
 
 async function toggleStatus() {

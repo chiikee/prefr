@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const db = require('./db');
-const { tallyIRV } = require('./irv');
+const { tallyIRV, tallyBorda } = require('./irv');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -61,9 +61,10 @@ app.get('/api/polls/:pollId/tally', async (req, res) => {
   const options = JSON.parse(poll.options);
   const ballots = await db.all(`SELECT ranking FROM ballots WHERE poll_id=?`, [req.params.pollId]);
   const parsed = ballots.map(b => JSON.parse(b.ranking));
-  const tally = tallyIRV(parsed, options);
+  const irvResult = tallyIRV(parsed, options);
+  const bordaResult = tallyBorda(parsed, options);
 
-  res.json({ tally, ballotCount: ballots.length });
+  res.json({ irv: irvResult, borda: bordaResult, ballotCount: ballots.length });
 });
 
 // GET /api/polls/:pollId/ballot/:alias — fetch existing ballot for an alias
@@ -148,7 +149,8 @@ app.get('/api/polls/:pollId/:adminKey', async (req, res) => {
   const options = JSON.parse(poll.options);
 
   const parsedBallots = ballots.map(b => JSON.parse(b.ranking));
-  const tally = tallyIRV(parsedBallots, options);
+  const irvResult = tallyIRV(parsedBallots, options);
+  const bordaResult = tallyBorda(parsedBallots, options);
 
   res.json({
     id: poll.id,
@@ -159,7 +161,8 @@ app.get('/api/polls/:pollId/:adminKey', async (req, res) => {
     adminKey: poll.admin_key,
     ballotCount: ballots.length,
     voters: ballots.map(b => b.alias),
-    tally,
+    irv: irvResult,
+    borda: bordaResult,
   });
 });
 
@@ -244,7 +247,7 @@ app.get('/vote/*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'vo
 app.get('/recover', (req, res) => res.sendFile(path.join(__dirname, 'public', 'recover.html')));
 
 db.init().then(() => {
-  app.listen(PORT, () => console.log(`Ranked-vote server running on http://localhost:${PORT}`));
+  app.listen(PORT, () => console.log(`Prefr server running on http://localhost:${PORT}`));
 }).catch(err => {
   console.error('Failed to initialize database:', err);
   process.exit(1);

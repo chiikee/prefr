@@ -1,11 +1,11 @@
-# RankedVote
+# Prefr
 
-A lightweight ranked-choice voting app using Instant-Runoff Voting (IRV) — the Australian system.
+A lightweight ranked-choice voting app using Instant-Runoff Voting (IRV) and Borda Count — the Australian system and points-based ranking.
 
 ## Features
 
 - Create polls with drag-to-rank voting
-- IRV tally computed on demand (round-by-round breakdown)
+- IRV and Borda tally computed on demand (round-by-round breakdown for IRV, scores for Borda)
 - Admin link = identity (no login required)
 - Recovery passphrase to retrieve a lost admin link
 - Open/close polls manually

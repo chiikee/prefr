@@ -1,7 +1,7 @@
 {
-  "name": "ranked-vote",
+  "name": "prefr",
   "version": "1.0.0",
-  "description": "Ranked choice voting app with IRV tallying",
+  "description": "Ranked choice voting app with IRV and Borda tallying",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
