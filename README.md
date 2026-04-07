@@ -87,3 +87,4 @@ Tie-breaking on elimination: alphabetical order (deterministic).
 - The recovery passphrase is stored as a bcrypt hash (cost 10) — never in plaintext.
 - Wrong recovery attempts trigger exponential backoff per IP (2s → 4s → 8s… up to 30s), tracked per poll within a 10-minute window.
 - No authentication beyond possession of the admin link.
+# prefr
